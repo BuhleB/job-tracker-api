@@ -1,54 +1,63 @@
 # Job Application Tracker API
 
-A REST API for tracking job applications through a defined status workflow
-(`applied → interviewing → offer → accepted`, with `rejected`/`withdrawn`
-as exits at any active stage). Built to demonstrate not just a working
-service, but the testing discipline and delivery pipeline around it.
+A REST API I built to track job applications through a structured status
+workflow: `applied → interviewing → offer → accepted`, with `rejected` and
+`withdrawn` available as exits at any active stage.
+
+Live API: https://job-tracker-api-1sca.onrender.com/docs
 
 ![CI](https://github.com/BuhleB/job-tracker-api/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
 
-## Why this project exists
+## Why I built this
 
-Most portfolio APIs are CRUD with no real logic to test. This one has an
-actual business rule worth verifying: an application can't jump straight
-from "applied" to "offer," terminal statuses can't be changed, and
-follow-up dates are calculated automatically based on status. That rule
-lives in its own module (`app/state_machine.py`) specifically so it can be
-unit tested without touching a database or the API layer.
+I built this to have a dedicated tool for tracking my own job search,
+and to demonstrate testing patterns I apply professionally — not just
+CRUD with tests bolted on.
+
+The core business rule is that an application can't skip stages (you
+can't jump from "applied" to "offer" without going through
+"interviewing"), and terminal statuses like "rejected" or "accepted"
+can't be changed. Follow-up dates are calculated automatically based
+on the current status.
+
+I isolated that logic into its own module (`app/state_machine.py`) with
+no database or FastAPI dependencies so it can be unit tested in isolation.
 
 ## Tech stack
 
 - **API**: FastAPI + Pydantic v2
-- **ORM / DB**: SQLAlchemy 2.0, SQLite for dev/test, PostgreSQL in production
-  (swap via the `DATABASE_URL` env var — no code changes needed)
+- **ORM / DB**: SQLAlchemy 2.0, SQLite (dev/demo), configurable to PostgreSQL
+  via `DATABASE_URL` env var with no code changes
 - **Testing**: pytest, pytest-cov, FastAPI's `TestClient`
-- **CI/CD**: GitHub Actions (test → coverage gate → Docker build)
+- **CI/CD**: GitHub Actions — runs the full suite, enforces a coverage floor,
+  then builds the Docker image on every push
 - **Containerization**: Docker
 
 ## Test strategy
 
 | Layer | File | What it covers | Runs against |
 |---|---|---|---|
-| Unit | `tests/test_state_machine.py` | Status transition rules, follow-up date logic | Nothing — pure functions |
+| Unit | `tests/test_state_machine.py` | Status transition rules, follow-up date logic | Pure functions, no dependencies |
 | Integration | `tests/test_crud.py` | CRUD + business logic against a real DB session | In-memory SQLite |
-| API / E2E | `tests/test_api.py` | Full HTTP request/response cycle, status codes, error handling | In-memory SQLite via `TestClient` |
+| API | `tests/test_api.py` | Full HTTP cycle, status codes, error responses | In-memory SQLite via `TestClient` |
 
-32 tests, 93% line coverage. CI fails the build if coverage drops below 80%.
+32 tests, 93% line coverage. The CI pipeline fails the build if coverage
+drops below 80%, so the gate is enforced automatically on every push.
 
-This mirrors a standard test pyramid: fast, isolated unit tests at the
-base, fewer integration tests in the middle, and a thin layer of
-API-level tests confirming the pieces work together end to end.
+The structure follows a test pyramid: the majority of tests are fast,
+isolated unit tests, with a smaller set of integration tests, and a thin
+layer of API-level tests confirming everything works together end to end.
 
-## Running it locally
+## Running locally
 
 ```bash
 python -m venv venv
-source venv/bin/activate
+source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 uvicorn app.main:app --reload
-# API docs at http://localhost:8000/docs
+# Interactive docs at http://localhost:8000/docs
 ```
 
 ## Running the tests
@@ -64,20 +73,20 @@ docker build -t job-tracker-api .
 docker run -p 8000:8000 job-tracker-api
 ```
 
-## API endpoints
+## Endpoints
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/applications/` | Create an application (defaults to `applied`) |
-| GET | `/applications/` | List applications, optional `?status=` filter |
-| GET | `/applications/{id}` | Get one application |
-| PUT | `/applications/{id}` | Update company/role/notes/follow-up date |
-| PATCH | `/applications/{id}/status` | Move to a new status (validated) |
-| DELETE | `/applications/{id}` | Delete an application |
-| GET | `/health` | Health check |
+| `POST` | `/applications/` | Create an application (status defaults to `applied`) |
+| `GET` | `/applications/` | List all applications; filter with `?status=` |
+| `GET` | `/applications/{id}` | Get a single application |
+| `PUT` | `/applications/{id}` | Update company, role, notes, or follow-up date |
+| `PATCH` | `/applications/{id}/status` | Advance status (validated against workflow rules) |
+| `DELETE` | `/applications/{id}` | Delete an application |
+| `GET` | `/health` | Health check |
 
-## What I'd add next
+## Coming next
 
-- Alembic migrations instead of `create_all` on startup
-- Authentication (the API is currently single-user/open)
-- A `follow_up_date < today` query for an "overdue follow-ups" view
+- React dashboard for visualising applications by status
+- JWT authentication via FastAPI's `OAuth2PasswordBearer`
+- Alembic migrations for schema version control
