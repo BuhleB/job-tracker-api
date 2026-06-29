@@ -5,6 +5,7 @@ workflow: `applied → interviewing → offer → accepted`, with `rejected` and
 `withdrawn` available as exits at any active stage.
 
 Live API: https://job-tracker-api-1sca.onrender.com/docs
+Live Dashboard: https://jobtacker.netlify.app/
 
 ![CI](https://github.com/BuhleB/job-tracker-api/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
