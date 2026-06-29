@@ -4,7 +4,7 @@ A REST API I built to track job applications through a structured status
 workflow: `applied → interviewing → offer → accepted`, with `rejected` and
 `withdrawn` available as exits at any active stage.
 
-Live API: https://job-tracker-api-1sca.onrender.com/docs
+Live API: https://job-tracker-api-1sca.onrender.com/docs<br/>
 Live Dashboard: https://jobtacker.netlify.app/
 
 ![CI](https://github.com/BuhleB/job-tracker-api/actions/workflows/ci.yml/badge.svg)
@@ -88,6 +88,5 @@ docker run -p 8000:8000 job-tracker-api
 
 ## Coming next
 
-- React dashboard for visualising applications by status
 - JWT authentication via FastAPI's `OAuth2PasswordBearer`
 - Alembic migrations for schema version control
