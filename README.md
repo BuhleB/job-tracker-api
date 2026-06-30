@@ -1,6 +1,6 @@
 # Job Application Tracker API
 
-A REST API I built to track job applications through a structured status
+A REST API built to track job applications through a structured status
 workflow: `applied → interviewing → offer → accepted`, with `rejected` and
 `withdrawn` available as exits at any active stage.
 
@@ -10,20 +10,15 @@ Live Dashboard: https://jobtacker.netlify.app/
 ![CI](https://github.com/BuhleB/job-tracker-api/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
 
-## Why I built this
+## How it works
 
-I built this to have a dedicated tool for tracking my own job search,
-and to demonstrate testing patterns I apply professionally — not just
-CRUD with tests bolted on.
+An application can't skip stages (you can't jump from "applied" to "offer"
+without going through "interviewing"), and terminal statuses like "rejected"
+or "accepted" can't be changed. Follow-up dates are calculated automatically
+based on the current status.
 
-The core business rule is that an application can't skip stages (you
-can't jump from "applied" to "offer" without going through
-"interviewing"), and terminal statuses like "rejected" or "accepted"
-can't be changed. Follow-up dates are calculated automatically based
-on the current status.
-
-I isolated that logic into its own module (`app/state_machine.py`) with
-no database or FastAPI dependencies so it can be unit tested in isolation.
+That logic is isolated into its own module (`app/state_machine.py`) with no
+database or FastAPI dependencies, so it can be unit tested in isolation.
 
 ## Tech stack
 
@@ -56,7 +51,6 @@ layer of API-level tests confirming everything works together end to end.
 python -m venv venv
 source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
 uvicorn app.main:app --reload
 # Interactive docs at http://localhost:8000/docs
 ```
